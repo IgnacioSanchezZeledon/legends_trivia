@@ -4,15 +4,15 @@
     "type": "mcq",
     "category": "characters",
     "question": "What is the name of the woman who punishes unfaithful men in a legend?",
-    "options": ["La Tulevieja", "La Mona", "La Segua", "La Llorona"],
-    "answer_index": 2
+    "options": ["La Mona", "La Cegua", "La Llorona", "La Tulevieja"],
+    "answer_index": 1
   },
   {
     "id": "Q2",
     "type": "mcq",
     "category": "summary",
-    "question": "The Cadejos appears mostly:",
-    "options": ["in daylight", "on holidays", "in schools", "at night"],
+    "question": "El Cadejos appears mostly ____. ",
+    "options": ["in schools", "in daylight", "on holidays", "at night"],
     "answer_index": 3
   },
   {
@@ -27,32 +27,32 @@
     "type": "mcq",
     "category": "characteristics",
     "question": "La Tulevieja carries a ________ on her back.",
-    "options": ["wooden guitar", "wicker basket", "burning candle", "magic mirror"],
-    "answer_index": 1
+    "options": ["burning candle", "wooden guitar", "wicker basket", "magic mirror"],
+    "answer_index": 2
   },
   {
     "id": "Q5",
     "type": "mcq",
     "category": "conflict",
     "question": "What is the purpose of the legend of El Cadejos?",
-    "options": ["Encourage children to play outside", "Warn travelers at night", "Entertain people at parties", "Teach math"],
+    "options": ["Teach respect for spirits", "Warn travelers at night", "Explain strange events at night", "Justify rural traditions"],
     "answer_index": 1
   },
   {
     "id": "Q6",
     "type": "mcq",
     "category": "characters",
-    "question": "Where does La Segua usually appear?",
-    "options": ["In shopping malls", "In the sky", "On lonely roads", "At school"],
+    "question": "Where does La Cegua usually appear?",
+    "options": ["At the edge of forests", "Near river crossings", "On lonely roads", "In the sky"],
     "answer_index": 2
   },
   {
     "id": "Q7",
     "type": "mcq",
     "category": "summary",
-    "question": "Where are the legends of La Segua, El Cadejos and La Tulevieja from?",
-    "options": ["Argentina", "Costa Rica", "Spain", "Perú"],
-    "answer_index": 1
+    "question": "Where are the legends of La Cegua, El Cadejos and La Tulevieja from?",
+    "options": ["Argentina", "Spain", "Costa Rica", "Perú"],
+    "answer_index": 2
   },
   {
     "id": "Q8",
@@ -66,15 +66,15 @@
     "type": "mcq",
     "category": "theme",
     "question": "What does La Tulevieja symbolize?",
-    "options": ["Guilt and punishment", "Love and compassion", "Friendship and trust", "Hope and redemption"],
+    "options": ["Guilt and punishment", "Friendship and trust", "Love and compassion", "Hope and redemption"],
     "answer_index": 0
   },
   {
     "id": "Q10",
     "type": "mcq",
     "category": "characteristics",
-    "question": "La Segua looks beautiful but has the face of a ________.",
-    "options": ["lion", "horse", "baby", "skeleton"],
+    "question": "La Cegua looks beautiful but has the face of a ________.",
+    "options": ["cow", "horse", "lion", "skeleton"],
     "answer_index": 1
   },
   {
@@ -82,16 +82,16 @@
     "type": "mcq",
     "category": "theme",
     "question": "What do the legends teach us?",
-    "options": ["To play soccer and score goals", "To save money and grow rich", "To cook meals and serve food", "To be careful and behave well"],
-    "answer_index": 3
+    "options": ["To understand community traditions", "To interpret mysterious events", "To be careful and behave well", "To respect natural forces"],
+    "answer_index": 2
   },
   {
     "id": "Q12",
     "type": "mcq",
     "category": "characters",
     "question": "What does the bad Cadejos do? It ____.",
-    "options": ["protects children", "brings gifts", "gives advice", "drives people mad"],
-    "answer_index": 3
+    "options": ["leads victims off the path", "steals travelers’ belongings", "drives people mad", "frightens people at night"],
+    "answer_index": 2
   },
   {
     "id": "Q13",
@@ -104,8 +104,8 @@
     "id": "Q14",
     "type": "mcq",
     "category": "theme",
-    "question": "What do the characters La Segua, La Tulevieja, and El Cadejos have in common? They ____.",
-    "options": ["live in the sea", "teach moral lessons", "are all friendly", "are invisible"],
+    "question": "What do the characters La Cegua, La Tulevieja, and El Cadejos have in common? They ____.",
+    "options": ["appear to travelers at night", "teach moral lessons", "are invisible", "live in the sea"],
     "answer_index": 1
   },
   {
@@ -113,94 +113,94 @@
     "type": "mcq",
     "category": "summary",
     "question": "What is a common symbol that appears in many Costa Rican legends?",
-    "options": ["Caves and villages", "Churches and cemeteries", "Forests and mountains", "Rivers and crossroads"],
-    "answer_index": 3
+    "options": ["Rivers and crossroads", "Churches and cemeteries", "Caves and villages", "Forests and mountains"],
+    "answer_index": 0
   },
   {
     "id": "Q16",
     "type": "mcq",
     "category": "conflict",
-    "question": "Why do legends like La Segua often begin on a lonely road?",
-    "options": ["Because there is better lighting", "Because that is where parties happen", "Because people travel in groups", "To reflect isolation and danger"],
-    "answer_index": 3
+    "question": "Why do legends like La Cegua often begin on a lonely road? It is ____.",
+    "options": ["because strange encounters are more believable in remote places", "because that is where parties happen", "to reflect isolation and danger", "because travelers are more vulnerable there"],
+    "answer_index": 2
   },
   {
     "id": "Q17",
     "type": "mcq",
     "category": "theme",
     "question": "Which of the following is a shared theme among the legends?",
-    "options": ["Facing the consequences of bad behavior", "Searching for hidden wealth", "Escaping from daily school", "Playing dangerous jokes on friends"],
-    "answer_index": 0
+    "options": ["Seeking protection from supernatural forces", "Facing the consequences of bad behavior", "Experiencing encounters with unsettling spirits", "Discovering mysteries tied to the natural world"],
+    "answer_index": 1
   },
   {
     "id": "Q18",
     "type": "mcq",
     "category": "theme",
-    "question": "What does the transformation of La Segua teach about appearance?",
-    "options": ["Horses are sacred animals.", "Only the inside matters.", "Beauty can be deceiving.", "You should wear makeup."],
-    "answer_index": 2
+    "question": "What does the transformation of La Cegua teach about appearance?",
+    "options": ["Only the inside matters.", "Beauty can be deceiving.", "Horses are sacred animals.", "You should wear makeup."],
+    "answer_index": 1
   },
   {
     "id": "Q19",
     "type": "mcq",
     "category": "characteristics",
     "question": "In many stories, El Cadejos has chains. What could this represent?",
-    "options": ["Music and rhythm", "Riches and power", "A burden or punishment", "Control and dominance"],
+    "options": ["Control and dominance", "Music and rhythm", "A burden or punishment", "Riches and power"],
     "answer_index": 2
   },
   {
     "id": "Q20",
     "type": "mcq",
     "category": "summary",
-    "question": "Choose the option that best describes what the Legend of La Tulevieja is about:",
-    "options": ["A spirit who saves children from fire", "A woman who drowned her child and was cursed to wander and cry", "A man who found gold and lost it", "A girl who loved the forest and became a tree"],
-    "answer_index": 1
+    "question": "Choose the option that best describes what the Legend of La Llorona is about:",
+    "options": ["A spirit who saves children from fire", "A man who found gold and lost it", "A woman cursed for drowning her child", "A girl who loved the forest and became a tree"],
+    "answer_index": 2
   },
   {
     "id": "Q21",
     "type": "mcq",
     "category": "conflict",
     "question": "Why might El Cadejos protect some people but harm others? It is because he ____.",
-    "options": ["gets tired easily", "follows the moon", "judges the person’s behavior", "flips a coin"],
-    "answer_index": 2
+    "options": ["judges the person’s behavior", "reacts to the energy people carry", "follows the moon", "senses the person’s intentions"],
+    "answer_index": 0
   },
   {
     "id": "Q22",
     "type": "mcq",
     "category": "theme",
-    "question": "Legends help communities ________.",
-    "options": ["forget the past", "win elections", "preserve culture and values", "spend money faster"],
-    "answer_index": 2
+    "question": "Complete: Legends help communities ________.",
+    "options": ["learn about witchcraft and spirits", "preserve culture and values", "change their customs and traditions", "forget past experiences and focus in the future"],
+    "answer_index": 1
   },
   {
     "id": "Q23",
     "type": "mcq",
     "category": "characters",
     "question": "Which character is punished due to abandonment?",
-    "options": ["The teacher", "The dog", "The Tulevieja", "The Cadejos"],
-    "answer_index": 2
+    "options": ["La Cegua", "La Tulevieja", "La Mona", "El Cadejos"],
+    "answer_index": 1
   },
   {
     "id": "Q24",
     "type": "mcq",
     "category": "summary",
     "question": "How do Costa Rican legends often spread from generation to generation?",
-    "options": ["Through textbooks only", "In movies", "On social media only", "By oral tradition and storytelling"],
-    "answer_index": 3
+    "options": ["Through online platforms and shared content", "In films and other popular media", "By oral tradition and storytelling", "Through school materials and written lessons"],
+    "answer_index": 2
   },
   {
     "id": "Q25",
     "type": "mcq",
     "category": "conflict",
-    "question": "Which of the following best describes a conflict found in La Segua?",
-    "options": ["A problem with magic spells", "A robbery between neighbors", "An argument over land ownership", "A moral warning about deception and fidelity"],
-    "answer_index": 3
+    "question": "Which of the following best describes a conflict found in La Cegua?",
+    "options": ["A moral warning about deception and fidelity", "A troubling situation caused by misused supernatural practices", "A disagreement involving inherited land and family claims", "A dispute between neighbors over a theft in the community"],
+    "answer_index": 0
   },
   {
     "id": "Q26",
     "type": "mcq",
     "category": "characters",
-    "question": "Why might El Cadejos be seen as a dual figure (good and bad)? It is because he ____.",
+    "question": "Why might El Cadejos be seen as a dual figure (good and bad)? It is because he ____. ",
     "options": ["can transform into different shapes", "disappears when crossing the river", "reflects both protection and danger", "is described as a wandering spirit"],
     "answer_index": 2
   },
@@ -209,15 +209,15 @@
     "type": "mcq",
     "category": "theme",
     "question": "In your opinion, why are legends effective for teaching values? It is because they ____.",
-    "options": ["are short and easy to remember", "have numbers and supporting charts", "use emotions and memorable stories", "are simple and easy to translate"],
-    "answer_index": 2
+    "options": ["present behaviors through symbolic characters", "use emotions and memorable stories", "are short and easy to remember", "connect lessons with familiar cultural contexts"],
+    "answer_index": 1
   },
   {
     "id": "Q28",
     "type": "mcq",
     "category": "summary",
     "question": "Which statement is true about Costa Rican legends? They ___.",
-    "options": ["reflect a mix of fear, teaching, and culture", "are exactly the same in all countries", "are based only on real events", "do not change over time"],
-    "answer_index": 0
+    "options": ["originate in Guanacaste", "reflect a mix of fear, teaching, and culture", "have remained the same throughout the years", "are based only on real events"],
+    "answer_index": 1
   }
 ]

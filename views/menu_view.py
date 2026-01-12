@@ -107,6 +107,7 @@ class MenuView(ctk.CTkFrame):
         self._item_music = None
         self._item_sound = None
         self._load_top_icons()
+        self._load_top_left_logobar()
 
         # Eventos
         self.canvas.bind("<Configure>", self._on_resize)
@@ -206,6 +207,82 @@ class MenuView(ctk.CTkFrame):
         except Exception as e:
             print("[MenuView] No se pudieron cargar/tintar íconos:", e)
 
+    def _load_top_left_logobar(self):
+        """
+        Carga y prepara una barra tipo 'pastilla' con tres logos,
+        ubicada arriba a la izquierda (sin funcionalidad).
+        """
+        try:
+            logos_dir = Path(assets_path("logos"))  # ajusta la carpeta si ocupás
+
+            # Cambia los nombres de archivo por los tuyos
+            logo1 = Image.open(logos_dir / "logo_ucr.png").convert("RGBA")
+            logo2 = Image.open(logos_dir / "logo_tcu_658.png").convert("RGBA")
+            logo3 = Image.open(logos_dir / "logo_escuela.png").convert("RGBA")
+
+            # Alturas personalizadas
+            target_h_logo1 = 70   # logo 1 
+            target_h_logo2 = 40   # logo 2
+            target_h_logo3  = 20   # logo 3 normal
+
+            def scale(img, h):
+                w = int(img.width * (h / img.height))
+                return img.resize((w, h), Image.Resampling.LANCZOS)
+
+            logo1 = scale(logo1, target_h_logo1)
+            logo2 = scale(logo2, target_h_logo2)
+            logo3 = scale(logo3, target_h_logo3)
+
+            self._img_logo1_bar = ImageTk.PhotoImage(logo1)
+            self._img_logo2_bar = ImageTk.PhotoImage(logo2)
+            self._img_logo3_bar = ImageTk.PhotoImage(logo3)
+
+            # Padding dentro de la “pastilla”
+            left_pad  = 18
+            right_pad = 18
+            top_pad   = 10
+            bottom_pad = 10
+            gap = 22  # espacio entre logos
+
+            widths = [logo1.width, logo2.width, logo3.width]
+            logos_total_w = sum(widths) + gap * 2  # dos gaps entre tres logos
+
+            bar_w = left_pad + logos_total_w + right_pad + 70
+            bar_h = top_pad + target_h_logo3 + bottom_pad + 20
+            radius = bar_h // 2  # para que quede bien redondeado
+
+            # Fondo tipo pastilla (blanco semi sobre el fondo)
+            bar_img = self._make_round_img(
+                bar_w, bar_h, radius,
+                fill="#FFFFFF",
+                outline=None,
+                outline_width=0
+            )
+
+            self._logo_bar_bg_img = bar_img
+            self._logo_bar_bg_item = self.canvas.create_image(0, 0, anchor="nw", image=self._logo_bar_bg_img)
+
+            # Items de los logos (se posicionan en _place_top_left_logobar)
+            self._logo_bar_logo1_item = self.canvas.create_image(0, 0, anchor="center", image=self._img_logo1_bar)
+            self._logo_bar_logo2_item = self.canvas.create_image(0, 0, anchor="center", image=self._img_logo2_bar)
+            self._logo_bar_logo3_item = self.canvas.create_image(0, 0, anchor="center", image=self._img_logo3_bar)
+
+            # Guardar config para el layout
+            self._logo_bar_cfg = {
+                "bar_w": bar_w,
+                "bar_h": bar_h,
+                "left_pad": left_pad,
+                "top_pad": top_pad,
+                "gap": gap,
+                "widths": widths,
+            }
+
+        except Exception as e:
+            print("[MenuView] No se pudo crear la barra de logos:", e)
+
+
+
+
 
     def _place_bottom_left_icons(self, w: int, h: int):
         """
@@ -239,6 +316,55 @@ class MenuView(ctk.CTkFrame):
             self.canvas.tag_raise(self._item_music)
         if self._item_sound:
             self.canvas.tag_raise(self._item_sound)
+    
+    def _place_top_left_logobar(self, w: int, h: int):
+        """
+        Posiciona la barra de logos arriba a la izquierda
+        y distribuye los tres logos dentro de la 'pastilla'.
+        """
+        if not hasattr(self, "_logo_bar_bg_item") or not hasattr(self, "_logo_bar_cfg"):
+            return
+
+        cfg = self._logo_bar_cfg
+        pad_window = 18  # separación respecto al borde de la ventana
+
+        # Fondo arriba derecha
+        bar_w = cfg["bar_w"] - 90
+        bar_h = cfg["bar_h"]
+
+        bar_x = w - pad_window - bar_w
+        bar_y = pad_window
+        self.canvas.coords(self._logo_bar_bg_item, bar_x, bar_y)
+        self.canvas.itemconfig(self._logo_bar_bg_item, anchor="nw")
+
+        # Centro vertical de los logos dentro de la pastilla
+        y_center = bar_y + cfg["bar_h"] // 2
+
+        # Posición horizontal de cada logo
+        x = bar_x + cfg["left_pad"]
+        widths = cfg["widths"]
+        gap = cfg["gap"]
+
+        # Logo 1
+        x1_center = x + widths[0] // 2
+        self.canvas.coords(self._logo_bar_logo1_item, x1_center, y_center)
+
+        # Logo 2
+        x = x + widths[0] + gap
+        x2_center = x + widths[1] // 2
+        self.canvas.coords(self._logo_bar_logo2_item, x2_center, y_center)
+
+        # Logo 3
+        x = x + widths[1] + gap
+        x3_center = x + widths[2] // 2
+        self.canvas.coords(self._logo_bar_logo3_item, x3_center, y_center)
+
+        # Asegurar que quede encima del fondo y del background general
+        self.canvas.tag_raise(self._logo_bar_bg_item)
+        self.canvas.tag_raise(self._logo_bar_logo1_item)
+        self.canvas.tag_raise(self._logo_bar_logo2_item)
+        self.canvas.tag_raise(self._logo_bar_logo3_item)
+
 
     # ===================== Toggle handlers =====================
     def _toggle_music(self):
@@ -449,3 +575,4 @@ class MenuView(ctk.CTkFrame):
 
         # Íconos (abajo-izquierda)
         self._place_bottom_left_icons(w, h)
+        self._place_top_left_logobar(w, h)

@@ -199,7 +199,7 @@ class PlayView(ttk.Frame):
 
     def F(self, size: int):
         """Fuente escalada."""
-        return ("Mikado Ultra", max(8, int(round(size * getattr(self, "ui_scale", 1.0)))))
+        return ("Mikado Ultra", max(8, int(round(size * getattr(self, "ui_scale", 1.0)))) )
 
     def _ensure_icons_scale(self):
         """Reescala y re-tintea iconos si cambió la escala."""
@@ -349,11 +349,55 @@ class PlayView(ttk.Frame):
         else:
             img_norm  = self._make_round_img(w, h, r, bg_disabled)
             img_hover = img_norm
+
         self._next_btn["img_norm"] = img_norm
         self._next_btn["img_hover"] = img_hover
         self.canvas.itemconfig(self._next_btn["img_item"], image=img_norm)
         self.canvas.itemconfig(self._next_btn["txt_item"], fill=(text_enabled if enabled else text_disabled))
+        self.canvas.itemconfigure(self._next_btn["txt_item"], font=self.F(18))
         self._next_btn["cmd"] = (lambda: self.controller.on_nav_next()) if enabled else (lambda: None)
+
+    def _refresh_button_visual(self, btn: dict, *, respect_enabled: bool = False):
+        """
+        Regenera imágenes/fuente del botón según w/h/r actuales.
+        Si respect_enabled=True y el botón es Next, se delega a _apply_next_visuals().
+        """
+        if not btn:
+            return
+
+        # Next: tu lógica especial (enabled/disabled)
+        if respect_enabled and btn is self._next_btn:
+            self._apply_next_visuals()
+            return
+
+        # Actualiza fuente
+        try:
+            self.canvas.itemconfigure(btn["txt_item"], font=self.F(18))
+        except Exception:
+            pass
+
+        w = btn.get("w", self.S(self.BTN_W))
+        h = btn.get("h", self.S(self.BTN_H))
+        r = btn.get("r", self.S(self.BTN_R))
+        color = btn.get("color", "#110D2E")
+        hover = btn.get("hover", "#255B88")
+        shadow = bool(btn.get("shadow", True))
+
+        if shadow:
+            img_norm  = self._make_button_img(w, h, r, color)
+            img_hover = self._make_button_img(w, h, r, hover)
+        else:
+            img_norm  = self._make_round_img(w, h, r, color)
+            img_hover = self._make_round_img(w, h, r, hover)
+
+        btn["img_norm"] = img_norm
+        btn["img_hover"] = img_hover
+
+        try:
+            self.canvas.itemconfig(btn["img_item"], image=img_norm)
+            self.canvas.itemconfig(btn["txt_item"], fill=btn.get("text_color", "#CCCCCC"))
+        except Exception:
+            pass
 
     # --- Level Complete ---
     def level_complete(self, stars, score, total):
@@ -475,24 +519,26 @@ class PlayView(ttk.Frame):
                 if self._answer_idx is not None:
                     pre["selected_index"] = self._answer_idx
                     pre["correct"] = (True if self._user_outcome is True else
-                                    False if self._user_outcome is False else None)
+                                      False if self._user_outcome is False else None)
             elif self._q.get("type") == "truefalse":
                 if self._answer_idx is not None:
-                    # índice 0 -> True, índice 1 -> False
                     pre["selected_tf"] = (self._answer_idx == 0)
                     pre["correct"] = (True if self._user_outcome is True else
-                                    False if self._user_outcome is False else None)
+                                      False if self._user_outcome is False else None)
 
             # Reconstruye tarjeta + botones al nuevo tamaño
             self.render_question(self._q, self._idx, self._total, review=self._review, **pre)
 
-            # Si ya había respuesta del usuario, mantén habilitado Next
-            if self._answer_locked:
-                self.set_next_enabled(True)
+        # IMPORTANTE: re-layout completo (header/footer/nav/iconos)
+        self._layout_all()
+
+        # Si ya había respuesta del usuario, mantén habilitado Next
+        if self._answer_locked:
+            self.set_next_enabled(True)
+
         else:
             # Si no hubo cambio de escala, solo relayout
             self._layout_all()
-
 
     def _layout_all(self):
         w, h = self.canvas.winfo_width(), self.canvas.winfo_height()
@@ -545,6 +591,9 @@ class PlayView(ttk.Frame):
                 width=self.S(120), height=self.S(40), r=self.S(12),
                 shadow=False
             )
+        # asegurar tamaño/estilo al escalar
+        self._quit_btn["w"], self._quit_btn["h"], self._quit_btn["r"] = self.S(120), self.S(40), self.S(12)
+        self._refresh_button_visual(self._quit_btn)
         self.canvas.coords(self._quit_btn["img_item"], 12 + self.S(60), BAR_H//2)
         self.canvas.coords(self._quit_btn["txt_item"], 12 + self.S(60), BAR_H//2)
 
@@ -553,19 +602,24 @@ class PlayView(ttk.Frame):
             self._back_btn = self._create_button_item(
                 text="Back",
                 command=lambda: self.controller and hasattr(self.controller, 'on_nav_prev') and self.controller.on_nav_prev(),
-                width= NAV_W, height= NAV_H, r= NAV_R,
+                width=NAV_W, height=NAV_H, r=NAV_R,
                 shadow=False
             )
         if self._next_btn is None:
             self._next_btn = self._create_button_item(
                 text="Next",
                 command=lambda: None,
-                width= NAV_W, height= NAV_H, r= NAV_R,
+                width=NAV_W, height=NAV_H, r=NAV_R,
                 shadow=False
             )
+
         # asegurar que reflejen escala actual
         self._back_btn["w"], self._back_btn["h"], self._back_btn["r"] = NAV_W, NAV_H, NAV_R
         self._next_btn["w"], self._next_btn["h"], self._next_btn["r"] = NAV_W, NAV_H, NAV_R
+
+        # refrescar visuales (aquí estaba el bug principal)
+        self._refresh_button_visual(self._back_btn)
+        self._refresh_button_visual(self._next_btn, respect_enabled=True)  # aplica enabled/disabled + font
 
         total_w = NAV_W*2 + self.S(20)
         start_x = w//2 - total_w//2 + NAV_W//2
@@ -574,7 +628,6 @@ class PlayView(ttk.Frame):
         self.canvas.coords(self._back_btn["txt_item"], start_x, cy)
         self.canvas.coords(self._next_btn["img_item"], start_x + NAV_W + self.S(20), cy)
         self.canvas.coords(self._next_btn["txt_item"], start_x + NAV_W + self.S(20), cy)
-        self._apply_next_visuals()
 
         # Cuerpo
         self._layout_body()
@@ -636,27 +689,31 @@ class PlayView(ttk.Frame):
             # crear si no existen; si existen, solo actualizar imagen
             if self._item_music is None:
                 initial_music = (self._img_music_off if (self.sound_manager and self.sound_manager.is_muted())
-                                else self._img_music_on)
+                                 else self._img_music_on)
                 self._item_music = self.canvas.create_image(0, 0, anchor="sw", image=initial_music)
                 self.canvas.tag_bind(self._item_music, "<Enter>",    lambda e: (self._on_icon_hover(), self.canvas.config(cursor="hand2")))
                 self.canvas.tag_bind(self._item_music, "<Leave>",    lambda e: self.canvas.config(cursor=""))
                 self.canvas.tag_bind(self._item_music, "<Button-1>", lambda e: (self._play_sfx("toggle"), self._toggle_music()))
             else:
-                self.canvas.itemconfig(self._item_music,
+                self.canvas.itemconfig(
+                    self._item_music,
                     image=(self._img_music_off if (self.sound_manager and self.sound_manager.is_muted())
-                           else self._img_music_on))
+                           else self._img_music_on)
+                )
 
             if self._item_sound is None:
                 initial_sound = (self._img_sound_off if (self.sfx_manager and self.sfx_manager.is_muted())
-                                else self._img_sound_on)
+                                 else self._img_sound_on)
                 self._item_sound = self.canvas.create_image(0, 0, anchor="sw", image=initial_sound)
                 self.canvas.tag_bind(self._item_sound, "<Enter>",    lambda e: (self._on_icon_hover(), self.canvas.config(cursor="hand2")))
                 self.canvas.tag_bind(self._item_sound, "<Leave>",    lambda e: self.canvas.config(cursor=""))
                 self.canvas.tag_bind(self._item_sound, "<Button-1>", lambda e: (self._play_sfx("toggle"), self._toggle_sfx()))
             else:
-                self.canvas.itemconfig(self._item_sound,
+                self.canvas.itemconfig(
+                    self._item_sound,
                     image=(self._img_sound_off if (self.sfx_manager and self.sfx_manager.is_muted())
-                           else self._img_sound_on))
+                           else self._img_sound_on)
+                )
 
         except Exception as e:
             print("[PlayView] No se pudieron cargar/tintar íconos de sonido:", e)
@@ -759,13 +816,11 @@ class PlayView(ttk.Frame):
 
         block_cy = BAR_H + (h - BAR_H - FOOT_H)//2
 
-        # card image ya creada en _build_card_and_text; solo recolocamos
         card_cx = w//2
         card_cy = block_cy - block_h//2 + CARD_H//2
         self.canvas.coords(self._card_item, card_cx, card_cy)
 
         if self._question_item is not None:
-            # ancho del texto de la tarjeta
             card_w = max(self.S(420), min(usable_w, self.S(1000)))
             self.canvas.itemconfig(self._question_item, width=int(card_w - self.S(48)))
             self.canvas.coords(self._question_item, card_cx, card_cy)
@@ -816,13 +871,14 @@ class PlayView(ttk.Frame):
         usable_w = w - self.S(24)
         card_w = max(self.S(420), min(usable_w, self.S(1000)))
 
-        # crear imagen del panel (cacheada por tamaño/color)
         panel_key = (card_w, CARD_H, CARD_R, self.CARD, (0,0,0,90), (0, self.S(self.SH_OFF)), self.S(self.SH_BLUR))
-        pil_panel = self._make_panel_img(card_w, CARD_H, CARD_R,
-                                         fill=self.CARD,
-                                         shadow_color=(0,0,0,90),
-                                         shadow_offset=(0, self.S(self.SH_OFF)),
-                                         blur=self.S(self.SH_BLUR))
+        pil_panel = self._make_panel_img(
+            card_w, CARD_H, CARD_R,
+            fill=self.CARD,
+            shadow_color=(0,0,0,90),
+            shadow_offset=(0, self.S(self.SH_OFF)),
+            blur=self.S(self.SH_BLUR)
+        )
         if panel_key not in self._card_photo_cache:
             self._card_photo_cache[panel_key] = ImageTk.PhotoImage(pil_panel)
         self._card_img = self._card_photo_cache[panel_key]
@@ -940,7 +996,6 @@ class PlayView(ttk.Frame):
 
     def _create_button_item(self, text, command, width=None, height=None, r=None,
                             color="#110D2E", hover="#255B88", text_color="#CCCCCC", shadow=True):
-        # aplicar escala por defecto si no viene tamaño
         w = width or self.S(self.BTN_W)
         h = height or self.S(self.BTN_H)
         rr = r or self.S(self.BTN_R)
@@ -952,8 +1007,14 @@ class PlayView(ttk.Frame):
             img_hover = self._make_round_img(w, h, rr, hover)
         img_item = self.canvas.create_image(0, 0, anchor="center", image=img_norm)
         txt_item = self.canvas.create_text(0, 0, text=text, fill=text_color, font=self.F(18), anchor="center")
-        btn = {"img_item": img_item, "txt_item": txt_item, "img_norm": img_norm, "img_hover": img_hover,
-               "w": w, "h": h, "r": rr, "cmd": command}
+        btn = {
+            "img_item": img_item, "txt_item": txt_item,
+            "img_norm": img_norm, "img_hover": img_hover,
+            "w": w, "h": h, "r": rr,
+            "cmd": command,
+            # guardar estilo para poder re-render al cambiar escala
+            "color": color, "hover": hover, "text_color": text_color, "shadow": shadow
+        }
 
         def _btn_hover(_e=None, b=btn):
             now = time.time()

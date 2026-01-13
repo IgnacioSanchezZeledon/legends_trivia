@@ -28,8 +28,9 @@ class App(tk.Tk):
         super().__init__()
         self.title("Legends Trivia Challenge")
         self.geometry("1080x720")
-        self.minsize(900, 560)
-        self.maxsize(1200, 800)
+        self.minsize(680, 450)
+        self.maxsize(1920, 1080)
+
 
         # >>> CLAVE: usar base_dir=resource_path("") para que styles.py encuentre assets/fonts en el exe
         apply_theme(self, base_dir=resource_path(""))

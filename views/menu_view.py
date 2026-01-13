@@ -455,8 +455,8 @@ class MenuView(ctk.CTkFrame):
                 self._logo_bar_logo3_item = self.canvas.create_image(0, 0, anchor="center", image=self._img_logo3_bar)
             else:
                 self.canvas.itemconfig(self._logo_bar_logo1_item, image=self._img_logo1_bar)
-                self.canvas.itemconfig(self._logo_bar_logo2_item, image=self._img_logo2_bar)
-                self.canvas.itemconfig(self._logo_bar_logo3_item, image=self._img_logo3_bar)
+                self.canvas.itemconfig(self._logo_bar_logo2_item, image=self._img_logo2_bar) # type: ignore
+                self.canvas.itemconfig(self._logo_bar_logo3_item, image=self._img_logo3_bar) # type: ignore
 
             self._logo_bar_cfg = {
                 "bar_w": bar_w,
@@ -500,22 +500,22 @@ class MenuView(ctk.CTkFrame):
 
         # Logo 1
         x1_center = x + widths[0] // 2
-        self.canvas.coords(self._logo_bar_logo1_item, x1_center, y_center)
+        self.canvas.coords(self._logo_bar_logo1_item, x1_center, y_center) # type: ignore
 
         # Logo 2
         x = x + widths[0] + gap
         x2_center = x + widths[1] // 2
-        self.canvas.coords(self._logo_bar_logo2_item, x2_center, y_center)
+        self.canvas.coords(self._logo_bar_logo2_item, x2_center, y_center) # type: ignore
 
         # Logo 3
         x = x + widths[1] + gap
         x3_center = x + widths[2] // 2
-        self.canvas.coords(self._logo_bar_logo3_item, x3_center, y_center)
+        self.canvas.coords(self._logo_bar_logo3_item, x3_center, y_center) # type: ignore
 
         self.canvas.tag_raise(self._logo_bar_bg_item)
-        self.canvas.tag_raise(self._logo_bar_logo1_item)
-        self.canvas.tag_raise(self._logo_bar_logo2_item)
-        self.canvas.tag_raise(self._logo_bar_logo3_item)
+        self.canvas.tag_raise(self._logo_bar_logo1_item) # type: ignore
+        self.canvas.tag_raise(self._logo_bar_logo2_item) # type: ignore
+        self.canvas.tag_raise(self._logo_bar_logo3_item) # type: ignore
 
     # ===================== Background cover =====================
     def _redraw_background(self):

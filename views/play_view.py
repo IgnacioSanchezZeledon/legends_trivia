@@ -2,6 +2,7 @@
 import time
 import tkinter as tk
 from tkinter import ttk
+import tkinter.font as tkfont
 from PIL import Image, ImageTk, ImageDraw, ImageFilter, ImageColor
 import math
 from pathlib import Path
@@ -15,15 +16,10 @@ class PlayView(ttk.Frame):
     Novedad: Auto-scaling de toda la UI según la resolución de la ventana.
              La escala solo reduce (no agranda) respecto a 1080x720.
 
-    Características:
-      - Fondo responsive con imagen.
-      - Tarjeta de enunciado con coloración dinámica del texto: ✓ (verde) o ✗ (rojo)
-        según el resultado del USUARIO.
-      - Botones de respuesta con estados normal/hover y SFX (hover/click).
-      - Reproducción de SFX de correcto/incorrecto solo en el primer marcado.
-      - Botón "Next" deshabilitado hasta que exista respuesta (o en modo revisión).
-      - Íconos de música/SFX anclados abajo-izquierda con hotkeys (m/M, s/S).
-      - Pantalla de "Level Complete".
+    Extra (mejor opción para textos largos):
+      - Wrap automático dentro del botón (create_text width=...)
+      - Auto-fit de fuente (reduce tamaño si el texto no cabe en la altura)
+        sin cambiar el layout de botones.
     """
 
     # === Paleta y medidas base (diseño en 1080x720) ===
@@ -64,6 +60,13 @@ class PlayView(ttk.Frame):
     # Tamaño base para auto-scaling
     BASE_W = 1080
     BASE_H = 720
+
+    # --- Texto botones: padding y límites ---
+    BTN_TEXT_PAD_X = 36   # padding horizontal interno (base)
+    BTN_TEXT_PAD_Y = 14   # padding vertical interno (base)
+    BTN_MAX_LINES  = 2    # objetivo: 2 líneas (si es imposible, reduce fuente)
+    BTN_FONT_PT    = 18   # base
+    BTN_FONT_MIN_PT = 11  # mínimo
 
     def __init__(self, parent, controller, switch_view, sound_manager=None, sfx_manager=None):
         super().__init__(parent)
@@ -188,7 +191,7 @@ class PlayView(ttk.Frame):
         except Exception:
             w, h = self.BASE_W, self.BASE_H
         s = min(w / self.BASE_W, h / self.BASE_H)
-        s = min(1.0, max(0.6, s))  # no bajar de 60% para legibilidad (ajustable)
+        s = min(1.0, max(0.6, s))  # no bajar de 60% para legibilidad
         changed = (abs(getattr(self, "ui_scale", 1.0) - s) > 0.01)
         self.ui_scale = s
         return changed
@@ -199,7 +202,7 @@ class PlayView(ttk.Frame):
 
     def F(self, size: int):
         """Fuente escalada."""
-        return ("Mikado Ultra", max(8, int(round(size * getattr(self, "ui_scale", 1.0)))) )
+        return ("Mikado Ultra", max(8, int(round(size * getattr(self, "ui_scale", 1.0)))))
 
     def _ensure_icons_scale(self):
         """Reescala y re-tintea iconos si cambió la escala."""
@@ -210,6 +213,83 @@ class PlayView(ttk.Frame):
             self._load_top_icons()
             self._icons_h_cur = new_h
 
+    # ===================== Texto en botones (wrap + autofit) =====================
+    def _wrap_text(self, text: str, max_px: int, font_obj: tkfont.Font) -> list[str]:
+        """Wrap básico por palabras, midiendo en pixeles con tkfont."""
+        words = (text or "").split()
+        if not words:
+            return [""]
+
+        lines = []
+        cur = words[0]
+        for w in words[1:]:
+            candidate = cur + " " + w
+            if font_obj.measure(candidate) <= max_px:
+                cur = candidate
+            else:
+                lines.append(cur)
+                cur = w
+        lines.append(cur)
+        return lines
+
+    def _choose_button_font_pt(self, text: str, inner_w: int, inner_h: int) -> int:
+        """
+        Escoge el tamaño de fuente (en 'pt base') más grande que:
+          - permita wrap a <= BTN_MAX_LINES
+          - y que el alto total (líneas * linespace) quepa en inner_h
+        """
+        start_pt = self.BTN_FONT_PT
+        min_pt   = self.BTN_FONT_MIN_PT
+
+        for pt in range(start_pt, min_pt - 1, -1):
+            px_size = max(8, int(round(pt * self.ui_scale)))
+            f = tkfont.Font(family="Mikado Ultra", size=px_size)
+            lines = self._wrap_text(text, inner_w, f)
+            line_h = f.metrics("linespace")
+            total_h = len(lines) * line_h
+            if len(lines) <= self.BTN_MAX_LINES and total_h <= inner_h:
+                return pt
+
+        # si no se logra 2 líneas, prioriza que quepa en altura aunque sean 3 líneas:
+        for pt in range(start_pt, min_pt - 1, -1):
+            px_size = max(8, int(round(pt * self.ui_scale)))
+            f = tkfont.Font(family="Mikado Ultra", size=px_size)
+            lines = self._wrap_text(text, inner_w, f)
+            line_h = f.metrics("linespace")
+            total_h = len(lines) * line_h
+            if total_h <= inner_h:
+                return pt
+
+        return min_pt
+
+    def _apply_button_text_layout(self, btn: dict):
+        """Aplica width (wrap) + font auto-fit al texto del botón."""
+        if not btn or "txt_item" not in btn:
+            return
+
+        text = btn.get("text", "")
+        w = int(btn.get("w", self.S(self.BTN_W)))
+        h = int(btn.get("h", self.S(self.BTN_H)))
+
+        pad_x = self.S(self.BTN_TEXT_PAD_X)
+        pad_y = self.S(self.BTN_TEXT_PAD_Y)
+
+        inner_w = max(10, w - pad_x)
+        inner_h = max(10, h - pad_y)
+
+        pt = self._choose_button_font_pt(text, inner_w, inner_h)
+        font_tuple = ("Mikado Ultra", max(8, int(round(pt * self.ui_scale))))
+
+        try:
+            self.canvas.itemconfigure(
+                btn["txt_item"],
+                width=inner_w,
+                justify="center",
+                font=font_tuple,
+            )
+        except Exception:
+            pass
+
     # ===================== API pública (Controller) =====================
     def render_question(self, q, idx, total, **state):
         if not self._ready:
@@ -218,7 +298,7 @@ class PlayView(ttk.Frame):
 
         try:
             self.canvas.update_idletasks()
-        except:
+        except Exception:
             pass
 
         self._q = q
@@ -278,7 +358,6 @@ class PlayView(ttk.Frame):
         b = self._buttons[idx]
 
         if not self._answer_locked:
-            # Primer marcado: respuesta del usuario
             self._answer_locked = True
             self._answer_idx = idx
             self._user_outcome = bool(good)
@@ -294,8 +373,8 @@ class PlayView(ttk.Frame):
 
             self.disable_choices()
             self.set_feedback()
+            self.set_next_enabled(True)  # <- habilita Next al responder
         else:
-            # Revelado posterior (no altera el resultado del usuario)
             color = "#266e3b" if good else "#7b2a2a"
             b["img_norm"]  = self._make_button_img(b["w"], b["h"], b["r"], color)
             b["img_hover"] = b["img_norm"]
@@ -326,6 +405,7 @@ class PlayView(ttk.Frame):
     def set_next_enabled(self, enabled: bool):
         self._next_enabled = bool(enabled)
         if self._next_btn is not None:
+            self._applyz = self._apply_next_visuals()
             self._apply_next_visuals()
 
     def _apply_next_visuals(self):
@@ -338,7 +418,6 @@ class PlayView(ttk.Frame):
         text_enabled = "#CCCCCC"
         text_disabled = "#888888"
 
-        # usar dimensiones actuales del botón
         w = self._next_btn.get("w", self.S(self.NAV_W))
         h = self._next_btn.get("h", self.S(self.NAV_H))
         r = self._next_btn.get("r", self.S(self.NAV_R))
@@ -354,27 +433,19 @@ class PlayView(ttk.Frame):
         self._next_btn["img_hover"] = img_hover
         self.canvas.itemconfig(self._next_btn["img_item"], image=img_norm)
         self.canvas.itemconfig(self._next_btn["txt_item"], fill=(text_enabled if enabled else text_disabled))
-        self.canvas.itemconfigure(self._next_btn["txt_item"], font=self.F(18))
+
+        # texto Next (normalmente corto, pero igual aplica layout)
+        self._apply_button_text_layout(self._next_btn)
+
         self._next_btn["cmd"] = (lambda: self.controller.on_nav_next()) if enabled else (lambda: None)
 
     def _refresh_button_visual(self, btn: dict, *, respect_enabled: bool = False):
-        """
-        Regenera imágenes/fuente del botón según w/h/r actuales.
-        Si respect_enabled=True y el botón es Next, se delega a _apply_next_visuals().
-        """
+        """Regenera imágenes/fuente del botón según w/h/r actuales."""
         if not btn:
             return
-
-        # Next: tu lógica especial (enabled/disabled)
         if respect_enabled and btn is self._next_btn:
             self._apply_next_visuals()
             return
-
-        # Actualiza fuente
-        try:
-            self.canvas.itemconfigure(btn["txt_item"], font=self.F(18))
-        except Exception:
-            pass
 
         w = btn.get("w", self.S(self.BTN_W))
         h = btn.get("h", self.S(self.BTN_H))
@@ -398,6 +469,9 @@ class PlayView(ttk.Frame):
             self.canvas.itemconfig(btn["txt_item"], fill=btn.get("text_color", "#CCCCCC"))
         except Exception:
             pass
+
+        # --- CLAVE: re-aplicar wrap + autofit ---
+        self._apply_button_text_layout(btn)
 
     # --- Level Complete ---
     def level_complete(self, stars, score, total):
@@ -433,15 +507,15 @@ class PlayView(ttk.Frame):
             0, 0, text=f"Stars: {stars_text}", fill=self.TEXT,
             font=self.F(22), anchor="center"
         )
-        self._complete["btn_next"] = self._create_button_item(  # type: ignore
+        self._complete["btn_next"] = self._create_button_item( # type: ignore
             text="Next Level", command=self.controller.on_next_level,
             width=self.S(200), height=self.S(56), r=self.S(16), shadow=False
         )
-        self._complete["btn_retry"] = self._create_button_item(  # type: ignore
+        self._complete["btn_retry"] = self._create_button_item( # type: ignore
             text="Retry", command=self.controller.on_retry_level,
             width=self.S(200), height=self.S(56), r=self.S(16), shadow=False
         )
-        self._complete["btn_select"] = self._create_button_item(  # type: ignore
+        self._complete["btn_select"] = self._create_button_item( # type: ignore
             text="Select Level", command=self.controller.on_back_to_levels,
             width=self.S(200), height=self.S(56), r=self.S(16), shadow=False
         )
@@ -474,13 +548,14 @@ class PlayView(ttk.Frame):
                 cx = x_cursor + b["w"] // 2
                 self.canvas.coords(b["img_item"], cx, y)
                 self.canvas.coords(b["txt_item"], cx, y)
+                self._apply_button_text_layout(b)
                 x_cursor += b["w"] + gap
 
     # ===================== LAYOUT & DRAW =====================
     def _on_first_layout(self):
         try:
             self.canvas.update_idletasks()
-        except:
+        except Exception:
             pass
         self._set_scale_from_canvas()
         self._ensure_icons_scale()
@@ -511,9 +586,7 @@ class PlayView(ttk.Frame):
 
         self._redraw_background()
 
-        # --- NUEVO: si cambió la escala, reconstruimos el body preservando estado ---
         if scale_changed and self._q is not None:
-            # Snapshot del estado actual
             pre = {}
             if self._q.get("type") == "mcq":
                 if self._answer_idx is not None:
@@ -526,26 +599,18 @@ class PlayView(ttk.Frame):
                     pre["correct"] = (True if self._user_outcome is True else
                                       False if self._user_outcome is False else None)
 
-            # Reconstruye tarjeta + botones al nuevo tamaño
             self.render_question(self._q, self._idx, self._total, review=self._review, **pre)
 
-        # IMPORTANTE: re-layout completo (header/footer/nav/iconos)
         self._layout_all()
 
-        # Si ya había respuesta del usuario, mantén habilitado Next
         if self._answer_locked:
             self.set_next_enabled(True)
-
-        else:
-            # Si no hubo cambio de escala, solo relayout
-            self._layout_all()
 
     def _layout_all(self):
         w, h = self.canvas.winfo_width(), self.canvas.winfo_height()
         if w < 2 or h < 2:
             return
 
-        # === tamaños escalados ===
         BAR_H   = self.S(self.BAR_H)
         FOOT_H  = self.S(self.FOOT_H)
         NAV_W   = self.S(self.NAV_W)
@@ -561,7 +626,6 @@ class PlayView(ttk.Frame):
         self.canvas.itemconfig(self._hdr_item, image=self._hdr_img)
         self.canvas.coords(self._hdr_item, 0, 0)
 
-        # Fuentes escaladas header
         self.canvas.itemconfigure(self._level_txt, font=self.F(22))
         self.canvas.itemconfigure(self._prog_txt,  font=self.F(20))
         self.canvas.coords(self._level_txt, w//2, BAR_H//2)
@@ -579,7 +643,6 @@ class PlayView(ttk.Frame):
         self.canvas.itemconfig(self._foot_item, image=self._foot_img)
         self.canvas.coords(self._foot_item, 0, h)
 
-        # Fuente feedback/footer
         self.canvas.itemconfigure(self._feed_txt, font=self.F(10))
         self.canvas.coords(self._feed_txt, 12, h - FOOT_H//2)
 
@@ -591,7 +654,6 @@ class PlayView(ttk.Frame):
                 width=self.S(120), height=self.S(40), r=self.S(12),
                 shadow=False
             )
-        # asegurar tamaño/estilo al escalar
         self._quit_btn["w"], self._quit_btn["h"], self._quit_btn["r"] = self.S(120), self.S(40), self.S(12)
         self._refresh_button_visual(self._quit_btn)
         self.canvas.coords(self._quit_btn["img_item"], 12 + self.S(60), BAR_H//2)
@@ -613,13 +675,11 @@ class PlayView(ttk.Frame):
                 shadow=False
             )
 
-        # asegurar que reflejen escala actual
         self._back_btn["w"], self._back_btn["h"], self._back_btn["r"] = NAV_W, NAV_H, NAV_R
         self._next_btn["w"], self._next_btn["h"], self._next_btn["r"] = NAV_W, NAV_H, NAV_R
 
-        # refrescar visuales (aquí estaba el bug principal)
         self._refresh_button_visual(self._back_btn)
-        self._refresh_button_visual(self._next_btn, respect_enabled=True)  # aplica enabled/disabled + font
+        self._refresh_button_visual(self._next_btn, respect_enabled=True)
 
         total_w = NAV_W*2 + self.S(20)
         start_x = w//2 - total_w//2 + NAV_W//2
@@ -636,7 +696,6 @@ class PlayView(ttk.Frame):
         if self._complete_active:
             self._layout_level_complete_plain()
 
-        # Asegurar z-order de iconos
         if self._item_music: self.canvas.tag_raise(self._item_music)
         if self._item_sound: self.canvas.tag_raise(self._item_sound)
 
@@ -686,7 +745,6 @@ class PlayView(ttk.Frame):
             self._img_sound_on  = ImageTk.PhotoImage(sound_on)
             self._img_sound_off = ImageTk.PhotoImage(sound_off)
 
-            # crear si no existen; si existen, solo actualizar imagen
             if self._item_music is None:
                 initial_music = (self._img_music_off if (self.sound_manager and self.sound_manager.is_muted())
                                  else self._img_music_on)
@@ -740,22 +798,6 @@ class PlayView(ttk.Frame):
             self.canvas.coords(self._item_sound, x, h - pad)
             self.canvas.itemconfig(self._item_sound, anchor="sw")
 
-    def _right_limit_for_text(self) -> int:
-        pad = self._top_icons_padding
-        gap = self._top_icons_gap
-        try:
-            bbox = self.canvas.bbox(self._item_sound) if self._item_sound is not None else None
-            sound_w = (bbox[2] - bbox[0]) if bbox else self._top_icons_h
-        except Exception:
-            sound_w = self._top_icons_h
-        try:
-            bbox2 = self.canvas.bbox(self._item_music) if self._item_music is not None else None
-            music_w = (bbox2[2] - bbox2[0]) if bbox2 else self._top_icons_h
-        except Exception:
-            music_w = self._top_icons_h
-        total_icons_w = sound_w + gap + music_w
-        return self.canvas.winfo_width() - (pad + total_icons_w + gap)
-
     def _toggle_music(self):
         if not self.sound_manager or not self._item_music:
             return
@@ -788,7 +830,6 @@ class PlayView(ttk.Frame):
         if w < 2 or h < 2 or self._card_item is None:
             return
 
-        # medidas escaladas
         BAR_H   = self.S(self.BAR_H)
         FOOT_H  = self.S(self.FOOT_H)
         CARD_H  = self.S(self.CARD_H)
@@ -841,6 +882,7 @@ class PlayView(ttk.Frame):
                 y = top_y + r * (BTN_H + BTN_GAP_Y)
                 self.canvas.coords(b["img_item"], x, y)
                 self.canvas.coords(b["txt_item"], x, y)
+                self._apply_button_text_layout(b)
         else:
             row_fit = (w >= TF_ROW_MIN_W)
             if row_fit and n >= 2:
@@ -851,12 +893,14 @@ class PlayView(ttk.Frame):
                     x = start_x + i * (BTN_W + BTN_GAP_X)
                     self.canvas.coords(b["img_item"], x, y)
                     self.canvas.coords(b["txt_item"], x, y)
+                    self._apply_button_text_layout(b)
             else:
                 for i, b in enumerate(self._buttons):
                     x = w//2
                     y = top_y + i * (BTN_H + BTN_GAP_Y)
                     self.canvas.coords(b["img_item"], x, y)
                     self.canvas.coords(b["txt_item"], x, y)
+                    self._apply_button_text_layout(b)
 
     def _build_card_and_text(self):
         w, h = self.canvas.winfo_width(), self.canvas.winfo_height()
@@ -1005,16 +1049,28 @@ class PlayView(ttk.Frame):
         else:
             img_norm  = self._make_round_img(w, h, rr, color)
             img_hover = self._make_round_img(w, h, rr, hover)
+
         img_item = self.canvas.create_image(0, 0, anchor="center", image=img_norm)
-        txt_item = self.canvas.create_text(0, 0, text=text, fill=text_color, font=self.F(18), anchor="center")
+        txt_item = self.canvas.create_text(
+            0, 0,
+            text=text,
+            fill=text_color,
+            font=self.F(self.BTN_FONT_PT),
+            anchor="center",
+            justify="center"
+        )
+
         btn = {
             "img_item": img_item, "txt_item": txt_item,
             "img_norm": img_norm, "img_hover": img_hover,
             "w": w, "h": h, "r": rr,
             "cmd": command,
-            # guardar estilo para poder re-render al cambiar escala
+            "text": text,  # <- CLAVE para recalcular font/layout en resize
             "color": color, "hover": hover, "text_color": text_color, "shadow": shadow
         }
+
+        # aplicar wrap + autofit desde el inicio
+        self._apply_button_text_layout(btn)
 
         def _btn_hover(_e=None, b=btn):
             now = time.time()

@@ -588,7 +588,7 @@ class LevelsView(ttk.Frame):
             except Exception:
                 music_w = self._icons_h_cur or self.S(self.TOP_ICONS_H_BASE)
 
-            x = pad + (music_w + gap if self._item_music else 0)
+            x = pad + (music_w + gap if self._item_music else 0) # type: ignore
             self.canvas.coords(self._item_sound, x, h - pad)
             self.canvas.itemconfig(self._item_sound, anchor="sw")
 

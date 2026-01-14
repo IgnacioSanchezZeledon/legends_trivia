@@ -13,11 +13,13 @@ from controllers.menu_controller import MenuController
 from controllers.levels_controller import LevelsController
 from controllers.play_controller import PlayController
 from controllers.congratulations_controller import CongratulationsController
+from controllers.credits_controller import CreditsController
 
 from views.menu_view import MenuView
 from views.levels_view import LevelsView
 from views.play_view import PlayView
 from views.congratulations_view import CongratulationsView
+from views.credits_view import CreditsView
 
 from utils.audio import MusicManager, SfxManager
 
@@ -25,6 +27,15 @@ from utils.audio import MusicManager, SfxManager
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
+
+        # ---------- ICONO (mismo .ico que el ejecutable) ----------
+        # Asegúrate de que exista: assets/icons/app.ico
+        try:
+            self.iconbitmap(assets_path("icons", "app_icon.ico"))
+        except Exception as e:
+            # Si falla, no rompe la app; solo te quedas con el ícono por defecto
+            print(f"Warning: could not set window icon: {e}")
+
         self.title("Legends Trivia Challenge")
         self.geometry("1080x720")
         self.minsize(680, 450)
@@ -63,7 +74,7 @@ class App(tk.Tk):
 
         # ---------- Factories ----------
         def build_menu_view() -> MenuView:
-            mc = MenuController(switch_view, build_levels_view)
+            mc = MenuController(switch_view, build_levels_view, build_credits_view)
             return MenuView(
                 self.container, mc, switch_view,
                 sound_manager=self.music, sfx_manager=self.sfx
@@ -94,6 +105,17 @@ class App(tk.Tk):
                 sound_manager=self.music,
                 sfx_manager=self.sfx
             )
+        
+        def build_credits_view() -> CreditsView:
+            cc = CreditsController(to_menu=lambda: switch_view(build_menu_view()))
+            return CreditsView(
+                self.container,
+                cc,
+                switch_view,
+                sound_manager=self.music,
+                sfx_manager=self.sfx
+            )
+
 
         def build_play_view(level_num: int) -> PlayView:
             def switch_to_levels(level_to_open: int | None = None, play_now: bool = False):

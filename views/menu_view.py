@@ -67,11 +67,12 @@ class MenuView(ctk.CTkFrame):
         )
         self.subtitle_item = self.canvas.create_text(
             0, 0,
-            text="Costa Rican Legends • Unit 6",
+            text="Costa Rican Legends • Unit 6 • Ninth Grade",
             fill="#cfd8dc",
             font=("Mikado Ultra", 22),
             anchor="center",
         )
+
 
         # Botones tipo imagen
         self._btns = []

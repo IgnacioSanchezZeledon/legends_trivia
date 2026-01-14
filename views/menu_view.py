@@ -92,7 +92,13 @@ class MenuView(ctk.CTkFrame):
             color="#2b6ea6", hover="#327fbf",
         )
         self._create_canvas_image_button(
-            text="Exit", dy=270,
+            text="Credits", dy=270,
+            command=self.controller.on_credits,
+            width=320, height=64, r=16,
+            color="#2b6ea6", hover="#327fbf",
+        )
+        self._create_canvas_image_button(
+            text="Exit", dy=345,
             command=self.controller.on_exit,
             width=320, height=64, r=16,
             color="#2b6ea6", hover="#327fbf",

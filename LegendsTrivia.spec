@@ -11,6 +11,7 @@ DATAS = [
     ('assets/images/*',    'assets/images'),
     ('assets/icons/*',     'assets/icons'),
     ('assets/music/*',     'assets/music'),
+    ('assets/logos/*',     'assets/logos'),
     ('assets/sfx/*',       'assets/sfx'),
     ('data/*.json',        'data'),
 ]
@@ -46,4 +47,5 @@ exe = EXE(
     strip=False,
     upx=True,
     console=False,          # pon True si quieres ver prints en consola
+    icon='assets/icons/app_icon.ico',
 )

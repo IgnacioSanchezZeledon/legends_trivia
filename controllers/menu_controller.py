@@ -7,10 +7,11 @@ class MenuController:
     Responsabilidades:
       - Manejar navegación al mapa de niveles (Play).
       - Manejar navegación a Credits.
+      - Manejar navegación a How To Play.
       - Manejar salida de la aplicación (Exit).
     """
 
-    def __init__(self, switch_view, levels_view_factory, credits_view_factory=None):
+    def __init__(self, switch_view, levels_view_factory, credits_view_factory=None, how_to_view_factory=None):
         """
         Parámetros
         ----------
@@ -24,6 +25,7 @@ class MenuController:
         self.switch_view = switch_view
         self.levels_view_factory = levels_view_factory
         self.credits_view_factory = credits_view_factory
+        self.how_to_view_factory = how_to_view_factory
 
     def on_play(self):
         """Construye LevelsView y cambia la vista hacia el mapa de niveles."""
@@ -34,6 +36,12 @@ class MenuController:
         if not self.credits_view_factory:
             return
         self.switch_view(self.credits_view_factory())
+
+    def on_how_to_play(self):
+        """Construye HowToPlayView y cambia la vista a la pantalla de instrucciones."""
+        if not self.how_to_view_factory:
+            return
+        self.switch_view(self.how_to_view_factory())
 
     def on_exit(self):
         """Sale de la aplicación de forma inmediata."""

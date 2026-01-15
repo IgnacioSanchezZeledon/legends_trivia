@@ -84,13 +84,11 @@ class MenuView(ctk.CTkFrame):
         )
         self._create_canvas_image_button(
             text="How to Play", dy=195,
-            command=lambda: messagebox.showinfo(
-                "How to Play",
-                "Choose a level and answer. Auto-advance; finish the level to unlock the next."
-            ),
+            command=self.controller.on_how_to_play,
             width=320, height=64, r=16,
             color="#2b6ea6", hover="#327fbf",
         )
+
         self._create_canvas_image_button(
             text="Credits", dy=270,
             command=self.controller.on_credits,

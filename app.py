@@ -14,12 +14,15 @@ from controllers.levels_controller import LevelsController
 from controllers.play_controller import PlayController
 from controllers.congratulations_controller import CongratulationsController
 from controllers.credits_controller import CreditsController
+from controllers.how_to_play_controller import HowToPlayController
 
 from views.menu_view import MenuView
 from views.levels_view import LevelsView
 from views.play_view import PlayView
 from views.congratulations_view import CongratulationsView
 from views.credits_view import CreditsView
+from views.how_to_play_view import HowToPlayView
+
 
 from utils.audio import MusicManager, SfxManager
 
@@ -73,8 +76,18 @@ class App(tk.Tk):
             view.pack(expand=True, fill="both")
 
         # ---------- Factories ----------
+        def build_how_to_play_view() -> HowToPlayView:
+            hc = HowToPlayController(to_menu=lambda: switch_view(build_menu_view()))
+            return HowToPlayView(
+                self.container,
+                hc,
+                switch_view,
+                sound_manager=self.music,
+                sfx_manager=self.sfx,
+            )
+
         def build_menu_view() -> MenuView:
-            mc = MenuController(switch_view, build_levels_view, build_credits_view)
+            mc = MenuController(switch_view, build_levels_view, build_credits_view, build_how_to_play_view)
             return MenuView(
                 self.container, mc, switch_view,
                 sound_manager=self.music, sfx_manager=self.sfx

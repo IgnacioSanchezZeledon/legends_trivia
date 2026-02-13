@@ -174,19 +174,19 @@ class HowToPlayView(ttk.Frame):
         return [
           {
               "top": "Main Menu\n\n"
-                    "Use the buttons to navigate:\n"
-                    "• Play: start the game\n"
-                    "• How to Play: open this guide\n"
-                    "• Credits: project information\n"
-                    "• Exit: close the game",
+                    "Use the buttons to navigate:\n\n"
+                    "• Play: Start the game\n"
+                    "• How to Play: Open this guide\n"
+                    "• Credits: Project information\n"
+                    "• Exit: Close the game",
               "image": assets_path("images", "menu.png"),
               "bottom": "Tip: If audio is distracting, use the icons at the bottom-left to mute music or sound effects."
           },
           {
               "top": "Credits Screen\n\n"
-                    "This section shows the academic context, institution, learning focus, and developer information.",
+                    "This section shows the academic plan from the MEP context, learning focus, and developer information.",
               "image": assets_path("images", "credits.png"),
-              "bottom": "Use Back to return to the main menu."
+              "bottom": "Use the Back button to return to the main menu."
           },
           {
               "top": "Select Level\n\n"
@@ -198,7 +198,7 @@ class HowToPlayView(ttk.Frame):
           {
               "top": "Gameplay Basics\n\n"
                     "Each level contains multiple questions.\n"
-                    "Read the question and click one of the four answers.",
+                    "Read each question and click on the corresponding answer out of the four given options.",
               "image": assets_path("images", "question.png"),
               "bottom": "The top bar shows:\n• Level name\n• Question number (e.g., 1/5)"
           },
@@ -206,7 +206,7 @@ class HowToPlayView(ttk.Frame):
               "top": "Correct Answer Feedback\n\n"
                     "When you choose correctly, the question is marked as correct and you can continue.",
               "image": assets_path("images", "correct_answer.png"),
-              "bottom": "Use Next to move to the next question."
+              "bottom": "Use the Next button to move to the next question."
           },
           {
               "top": "Wrong Answer Feedback\n\n"
@@ -216,18 +216,18 @@ class HowToPlayView(ttk.Frame):
           },
           {
               "top": "Navigation and Audio Controls\n\n"
-                    "Bottom controls:\n"
-                    "• Back / Next: move through the level questions\n"
-                    "• Music icon: toggle background music\n"
-                    "• Speaker icon: toggle sound effects",
+                    "Bottom controls:\n\n"
+                    "• Back / Next: Move through the level questions\n"
+                    "• Music icon: Toggle background music\n"
+                    "• Speaker icon: Toggle sound effects",
               "image": assets_path("images", "sounds.png"),
-              "bottom": "Shortcuts:\n• Press M to toggle music\n• Press S to toggle sound effects"
+              "bottom": "Shortcuts:\n\n• Press M to toggle music\n• Press S to toggle sound effects"
           },
           {
               "top": "Level Complete\n\n"
                     "After answering all questions, you will see your results:\n"
                     "• Score\n"
-                    "• Stars earned",
+                    "• Stars Earned",
               "image": assets_path("images", "level_complete.png"),
               "bottom": "Options:\n• Retry\n• Select Level\n• Next Level (if unlocked)"
           },
@@ -235,7 +235,7 @@ class HowToPlayView(ttk.Frame):
               "top": "Congratulations Screen\n\n"
                     "When you finish all levels, the game shows a final message recognizing your progress.",
               "image": assets_path("images", "congratulations.png"),
-              "bottom": "From here you can return to Levels or go back to the Main Menu."
+              "bottom": "From here, you can return to Levels or go back to the Main Menu."
           },
       ]
 

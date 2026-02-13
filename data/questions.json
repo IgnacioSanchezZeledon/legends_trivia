@@ -34,7 +34,7 @@
     "id": "Q5",
     "type": "mcq",
     "category": "conflict",
-    "question": "What is the purpose of the legend of El Cadejos?",
+    "question": "What is the purpose of the legend El Cadejos?",
     "options": ["Teach respect for spirits", "Warn travelers at night", "Explain strange events at night", "Justify rural traditions"],
     "answer_index": 1
   },
@@ -50,7 +50,7 @@
     "id": "Q7",
     "type": "mcq",
     "category": "summary",
-    "question": "Where are the legends of La Cegua, El Cadejos and La Tulevieja from?",
+    "question": "Where are the legends La Cegua, El Cadejos and La Tulevieja from?",
     "options": ["Argentina", "Spain", "Costa Rica", "Perú"],
     "answer_index": 2
   },
@@ -152,7 +152,7 @@
     "id": "Q20",
     "type": "mcq",
     "category": "summary",
-    "question": "Choose the option that best describes what the Legend of La Llorona is about:",
+    "question": "Choose the option that best describes what the Legend La Llorona is about:",
     "options": ["A spirit who saves children from fire", "A man who found gold and lost it", "A woman cursed for drowning her child", "A girl who loved the forest and became a tree"],
     "answer_index": 2
   },
@@ -192,7 +192,7 @@
     "id": "Q25",
     "type": "mcq",
     "category": "conflict",
-    "question": "Which of the following best describes a conflict found in La Cegua?",
+    "question": "Which of the following options best describes a conflict found in La Cegua?",
     "options": ["A moral warning about deception and fidelity", "A troubling situation caused by misused supernatural practices", "A disagreement involving inherited land and family claims", "A dispute between neighbors over a theft in the community"],
     "answer_index": 0
   },

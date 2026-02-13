@@ -66,7 +66,7 @@ class CongratulationsView(ttk.Frame):
         sound_manager=None,
         sfx_manager=None,
         title="CONGRATULATIONS!",
-        subtitle="YOU FINISHED ALL LEVELS",
+        subtitle="YOU COMPLETED ALL LEVELS!",
         paragraph=None,
     ):
         super().__init__(parent)
@@ -79,7 +79,7 @@ class CongratulationsView(ttk.Frame):
         self._title = title
         self._subtitle = subtitle
         self._paragraph = paragraph or (
-            "You’ve explored Costa Rica’s legends while practicing real English in context. "
+            "You have explored Costa Rica’s legends while practicing real English in context. "
             "Each question helped you build vocabulary, improve comprehension, and connect language "
             "with culture—just like learning is supposed to feel: memorable and meaningful."
         )

@@ -23,7 +23,6 @@ from views.congratulations_view import CongratulationsView
 from views.credits_view import CreditsView
 from views.how_to_play_view import HowToPlayView
 
-
 from utils.audio import MusicManager, SfxManager
 
 

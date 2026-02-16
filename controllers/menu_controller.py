@@ -11,7 +11,7 @@ class MenuController:
       - Manejar salida de la aplicación (Exit).
     """
 
-    def __init__(self, switch_view, levels_view_factory, credits_view_factory=None, how_to_view_factory=None):
+    def __init__(self,switch_view,levels_view_factory,credits_view_factory=None,how_to_view_factory=None,legends_view_factory=None,):
         """
         Parámetros
         ----------
@@ -26,6 +26,7 @@ class MenuController:
         self.levels_view_factory = levels_view_factory
         self.credits_view_factory = credits_view_factory
         self.how_to_view_factory = how_to_view_factory
+        self.legends_view_factory = legends_view_factory
 
     def on_play(self):
         """Construye LevelsView y cambia la vista hacia el mapa de niveles."""
@@ -42,6 +43,11 @@ class MenuController:
         if not self.how_to_view_factory:
             return
         self.switch_view(self.how_to_view_factory())
+
+    def on_legends_knowledge(self):
+        if not self.legends_view_factory:
+            return
+        self.switch_view(self.legends_view_factory())
 
     def on_exit(self):
         """Sale de la aplicación de forma inmediata."""

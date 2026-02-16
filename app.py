@@ -16,12 +16,20 @@ from controllers.congratulations_controller import CongratulationsController
 from controllers.credits_controller import CreditsController
 from controllers.how_to_play_controller import HowToPlayController
 
+# ✅ NUEVO (asegúrate de tener estos archivos en controllers/)
+from controllers.legends_knowledge_controller import LegendsKnowledgeController
+from controllers.legend_detail_controller import LegendDetailController
+
 from views.menu_view import MenuView
 from views.levels_view import LevelsView
 from views.play_view import PlayView
 from views.congratulations_view import CongratulationsView
 from views.credits_view import CreditsView
 from views.how_to_play_view import HowToPlayView
+
+# ✅ NUEVO (asegúrate de tener estos archivos en views/)
+from views.legends_knowledge_view import LegendsKnowledgeView
+from views.legend_detail_view import LegendDetailView
 
 from utils.audio import MusicManager, SfxManager
 
@@ -30,12 +38,10 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        # ---------- ICONO (mismo .ico que el ejecutable) ----------
-        # Asegúrate de que exista: assets/icons/app.ico
+        # ---------- ICONO ----------
         try:
             self.iconbitmap(assets_path("icons", "app_icon.ico"))
         except Exception as e:
-            # Si falla, no rompe la app; solo te quedas con el ícono por defecto
             print(f"Warning: could not set window icon: {e}")
 
         self.title("Legends Trivia Challenge")
@@ -44,7 +50,6 @@ class App(tk.Tk):
         self.maxsize(1920, 1080)
 
         apply_theme(self, base_dir=resource_path(""))
-
         self.configure(bg="#27474b")
 
         # Audio
@@ -85,11 +90,14 @@ class App(tk.Tk):
                 sfx_manager=self.sfx,
             )
 
-        def build_menu_view() -> MenuView:
-            mc = MenuController(switch_view, build_levels_view, build_credits_view, build_how_to_play_view)
-            return MenuView(
-                self.container, mc, switch_view,
-                sound_manager=self.music, sfx_manager=self.sfx
+        def build_credits_view() -> CreditsView:
+            cc = CreditsController(to_menu=lambda: switch_view(build_menu_view()))
+            return CreditsView(
+                self.container,
+                cc,
+                switch_view,
+                sound_manager=self.music,
+                sfx_manager=self.sfx
             )
 
         def build_levels_view() -> LevelsView:
@@ -109,7 +117,6 @@ class App(tk.Tk):
                 to_menu=lambda: switch_view(build_menu_view()),
                 to_levels=lambda: switch_view(build_levels_view())
             )
-
             return CongratulationsView(
                 self.container,
                 cc,
@@ -117,17 +124,6 @@ class App(tk.Tk):
                 sound_manager=self.music,
                 sfx_manager=self.sfx
             )
-        
-        def build_credits_view() -> CreditsView:
-            cc = CreditsController(to_menu=lambda: switch_view(build_menu_view()))
-            return CreditsView(
-                self.container,
-                cc,
-                switch_view,
-                sound_manager=self.music,
-                sfx_manager=self.sfx
-            )
-
 
         def build_play_view(level_num: int) -> PlayView:
             def switch_to_levels(level_to_open: int | None = None, play_now: bool = False):
@@ -153,6 +149,60 @@ class App(tk.Tk):
                 total_levels=self.lvl_model.total_levels(),
             )
             return v
+
+        # ✅ NUEVO: Legends Knowledge
+        def build_legends_knowledge_view() -> LegendsKnowledgeView:
+            lc = LegendsKnowledgeController(
+                to_menu=lambda: switch_view(build_menu_view()),
+                open_legend=lambda legend_key: switch_view(build_legend_detail_view(legend_key)),
+            )
+            return LegendsKnowledgeView(
+                self.container,
+                lc,
+                switch_view,
+                sound_manager=self.music,
+                sfx_manager=self.sfx,
+                legends=lc.legends,   # ✅ importante
+            )
+
+        # ✅ NUEVO: Legend Detail
+        def build_legend_detail_view(legend_key: str) -> LegendDetailView:
+            # usamos el mismo catálogo del controller
+            catalog_controller = LegendsKnowledgeController(
+                to_menu=lambda: None,
+                open_legend=lambda _: None,
+            )
+            data = next((x for x in catalog_controller.legends if x["key"] == legend_key), None)
+            if not data:
+                data = {"key": legend_key, "text": "No information available.", "image": None}
+
+            dc = LegendDetailController(
+                to_legends=lambda: switch_view(build_legends_knowledge_view())
+            )
+
+            return LegendDetailView(
+                self.container,
+                dc,
+                switch_view,
+                sound_manager=self.music,
+                sfx_manager=self.sfx,
+                legend_title=data.get("key", "Legend"),
+                legend_text=data.get("text", ""),
+                legend_image=data.get("image", None),
+            )
+
+        def build_menu_view() -> MenuView:
+            mc = MenuController(
+                switch_view,
+                build_levels_view,
+                build_credits_view,
+                build_how_to_play_view,
+                build_legends_knowledge_view,  # ✅ aquí va bien
+            )
+            return MenuView(
+                self.container, mc, switch_view,
+                sound_manager=self.music, sfx_manager=self.sfx
+            )
 
         switch_view(build_menu_view())
 

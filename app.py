@@ -15,8 +15,6 @@ from controllers.play_controller import PlayController
 from controllers.congratulations_controller import CongratulationsController
 from controllers.credits_controller import CreditsController
 from controllers.how_to_play_controller import HowToPlayController
-
-# ✅ NUEVO (asegúrate de tener estos archivos en controllers/)
 from controllers.legends_knowledge_controller import LegendsKnowledgeController
 from controllers.legend_detail_controller import LegendDetailController
 
@@ -26,8 +24,6 @@ from views.play_view import PlayView
 from views.congratulations_view import CongratulationsView
 from views.credits_view import CreditsView
 from views.how_to_play_view import HowToPlayView
-
-# ✅ NUEVO (asegúrate de tener estos archivos en views/)
 from views.legends_knowledge_view import LegendsKnowledgeView
 from views.legend_detail_view import LegendDetailView
 

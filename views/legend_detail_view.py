@@ -29,6 +29,11 @@ class LegendDetailView(ctk.CTkFrame):
     GAP_COL_BASE = 34           # gap entre imagen y panel
     GAP_TITLE_BLOCK_BASE = 22   # espacio entre título y bloque (imagen+panel)
 
+    # Separaciones (base)
+    HEADER_TITLE_GAP_BASE = 18   # gap entre header y título
+    TITLE_BODY_GAP_BASE   = 18   # gap entre título y body (2 columnas)
+
+
     def __init__(self, parent, controller, switch_view, sound_manager=None, sfx_manager=None,
                  legend_title="", legend_text="", legend_image=None):
         super().__init__(parent, fg_color="transparent")
@@ -408,7 +413,7 @@ class LegendDetailView(ctk.CTkFrame):
                 return Image.open(p).convert("RGBA")
             except Exception:
                 pass
-        w, h = 900, 520
+        w, h = 900, 440
         img = Image.new("RGBA", (w, h), (40, 60, 65, 255))
         draw = ImageDraw.Draw(img)
         draw.rectangle([0, 0, w - 1, h - 1], outline=(255, 255, 255, 90), width=3)
@@ -420,8 +425,24 @@ class LegendDetailView(ctk.CTkFrame):
         return img
 
     def _refresh_legend_image(self):
-        w_target = self.S(640)
-        h_target = self.S(330)
+        # --- targets basados en layout 2 columnas ---
+        canvas_w = max(1, self.canvas.winfo_width())
+        canvas_h = max(1, self.canvas.winfo_height())
+        header_h = self.S(self.HEADER_H_BASE)
+
+        side_pad = self.S(60)
+        gap = self.S(28)
+        top_gap = self.S(18)
+        bottom_pad = self.S(40)
+
+        content_top = header_h + top_gap
+        content_h = max(self.S(220), canvas_h - content_top - bottom_pad)
+
+        avail_w = max(self.S(320), canvas_w - side_pad * 2 - gap)
+        col_w = max(self.S(260), avail_w // 2)
+
+        w_target = col_w
+        h_target = min(self.S(440), content_h)  # límite razonable
 
         key = ("mainimg_contain", self.legend_title, w_target, h_target)
         if key in self._img_cache:
@@ -431,22 +452,17 @@ class LegendDetailView(ctk.CTkFrame):
 
         src = self._safe_open_legend_img()
 
-        # 🔹 CONTAIN (no recorte)
+        # CONTAIN
         scale = min(w_target / src.width, h_target / src.height)
-        new_w = int(src.width * scale)
-        new_h = int(src.height * scale)
-
+        new_w = max(1, int(src.width * scale))
+        new_h = max(1, int(src.height * scale))
         img = src.resize((new_w, new_h), Image.Resampling.LANCZOS)
 
-        # Fondo transparente del tamaño del cuadro
         out = Image.new("RGBA", (w_target, h_target), (0, 0, 0, 0))
-
-        # Centrar la imagen dentro del cuadro
         x = (w_target - new_w) // 2
         y = (h_target - new_h) // 2
         out.paste(img, (x, y), img)
 
-        # Bordes redondeados del contenedor
         r = self.S(20)
         mask = Image.new("L", (w_target, h_target), 0)
         draw = ImageDraw.Draw(mask)
@@ -458,19 +474,28 @@ class LegendDetailView(ctk.CTkFrame):
         tkimg = ImageTk.PhotoImage(final)
         self._img_cache[key] = tkimg
         self._legend_img_tk = tkimg
-
         self.canvas.itemconfig(self._legend_img_item, image=self._legend_img_tk)
 
 
+
     def _refresh_text_panel(self):
-        """
-        Panel de texto más ANCHO y menos ALTO.
-        Usa un ancho adaptable (hasta ~960) y reduce la altura.
-        """
-        # ancho adaptable según ventana (máx 960, con márgenes)
         canvas_w = max(1, self.canvas.winfo_width())
-        panel_w = min(self.S(960), canvas_w - self.S(120))
-        panel_h = self.S(190)  # ✅ menos alto
+        canvas_h = max(1, self.canvas.winfo_height())
+        header_h = self.S(self.HEADER_H_BASE)
+
+        side_pad = self.S(60)
+        gap = self.S(28)
+        top_gap = self.S(18)
+        bottom_pad = self.S(40)
+
+        content_top = header_h + top_gap
+        content_h = max(self.S(220), canvas_h - content_top - bottom_pad)
+
+        avail_w = max(self.S(320), canvas_w - side_pad * 2 - gap)
+        col_w = max(self.S(260), avail_w // 2)
+
+        panel_w = col_w
+        panel_h = min(self.S(440), content_h)
         r = self.S(22)
 
         key = ("panel", panel_w, panel_h, r)
@@ -489,14 +514,15 @@ class LegendDetailView(ctk.CTkFrame):
         self._text_bg_tk = self._img_cache[key]
         self.canvas.itemconfig(self._text_bg_item, image=self._text_bg_tk)
 
-        # texto: wrap por ancho real del panel + alineado a la izquierda
+        pad = self.S(18)
         self.canvas.itemconfigure(
             self._text_item,
             text=self.legend_text or "",
             font=self.F(18, bold=False),
-            width=panel_w - self.S(44),
+            width=panel_w - pad * 2,
             justify="left",
         )
+
 
     # ===================== Background cover =====================
     def _redraw_background(self):
@@ -563,62 +589,71 @@ class LegendDetailView(ctk.CTkFrame):
         cx = w // 2
         header_h = self.S(self.HEADER_H_BASE)
 
-        # ===== Back dentro del header =====
+        # ===== Header: SOLO back =====
         back_x = self.S(105)
         back_y = header_h // 2
         self.canvas.coords(self._back_btn["img_item"], back_x, back_y)
         self.canvas.coords(self._back_btn["txt_item"], back_x, back_y)
 
-        # ===== Título DENTRO del header (centrado verticalmente) =====
+        # ===== Título: DEBAJO del header =====
+        title_gap = self.S(self.HEADER_TITLE_GAP_BASE)
         self.canvas.itemconfigure(self.title_item, font=self.F(46, bold=True))
-        self.canvas.coords(self.title_item, cx, header_h // 2)
+        self.canvas.itemconfig(self.title_item, anchor="n")
+        title_y = header_h + title_gap
+        self.canvas.coords(self.title_item, cx, title_y)
 
-        # ===== Imagen centrada debajo del header =====
-        # (si quieres un poco más de aire, sube/baja IMG_TOP_GAP)
-        IMG_TOP_GAP = self.S(50)   # ✅ espacio entre header y la imagen
-        img_w = min(self.S(720), w - self.S(120))
-        img_h = self.S(330)
+        # Medir altura real del título (para empujar el body)
+        bbox = self.canvas.bbox(self.title_item)  # (x1,y1,x2,y2)
+        title_h = (bbox[3] - bbox[1]) if bbox else self.S(60)
 
-        img_top = header_h + IMG_TOP_GAP
-        self.canvas.itemconfig(self._legend_img_item, anchor="center")
-        self.canvas.coords(self._legend_img_item, cx, img_top + (img_h // 2))
+        # ===== Área contenido: 2 columnas =====
+        side_pad = self.S(60)
+        gap = self.S(28)
+        bottom_pad = self.S(40)
 
-        # ===== Panel de texto: más ancho y menos alto =====
-        PANEL_TOP_GAP = self.S(16)  # espacio entre imagen y panel
-        panel_w = min(self.S(960), w - self.S(120))
-        panel_h = self.S(190)
+        body_gap = self.S(self.TITLE_BODY_GAP_BASE)
+        content_top = title_y + title_h + body_gap
+        content_h = max(self.S(220), h - content_top - bottom_pad)
 
-        panel_top = img_top + img_h + PANEL_TOP_GAP
+        avail_w = max(self.S(320), w - side_pad * 2 - gap)
+        col_w = max(self.S(260), avail_w // 2)
 
-        self.canvas.itemconfig(self._text_bg_item, anchor="n")
-        self.canvas.coords(self._text_bg_item, cx, panel_top)
+        left_x = side_pad
+        right_x = side_pad + col_w + gap
+        y = content_top
 
+        # Imagen izquierda
+        self.canvas.itemconfig(self._legend_img_item, anchor="nw")
+        self.canvas.coords(self._legend_img_item, left_x, y)
+
+        # Panel derecha
+        self.canvas.itemconfig(self._text_bg_item, anchor="nw")
+        self.canvas.coords(self._text_bg_item, right_x, y)
+
+        # Texto dentro del panel
         pad = self.S(18)
-        left = cx - (panel_w // 2) + pad
-        top = panel_top + pad
-
         self.canvas.itemconfig(self._text_item, anchor="nw")
-        self.canvas.coords(self._text_item, left, top)
-        self.canvas.itemconfigure(self._text_item, width=panel_w - pad * 2, justify="left")
+        self.canvas.coords(self._text_item, right_x + pad, y + pad)
+        self.canvas.itemconfigure(self._text_item, width=col_w - pad * 2, justify="left")
 
-        # ===== Íconos abajo-izquierda =====
+        # Íconos abajo-izquierda
         self._place_bottom_left_icons(w, h)
 
-        # ===== Orden de capas =====
+        # ===== Capas =====
         self.canvas.tag_lower(self._bg_item)
 
-        # Contenido principal abajo
         self.canvas.tag_raise(self._legend_img_item)
         self.canvas.tag_raise(self._text_bg_item)
         self.canvas.tag_raise(self._text_item)
 
-        # Header SIEMPRE arriba de todo
+        # Header arriba
         self.canvas.tag_raise(self._hdr_item)
         self.canvas.tag_raise(self._back_btn["img_item"])
         self.canvas.tag_raise(self._back_btn["txt_item"])
+
+        # Título por encima del contenido (pero fuera del header)
         self.canvas.tag_raise(self.title_item)
 
-        # Iconos (encima de todo, opcional)
         if self._item_music:
             self.canvas.tag_raise(self._item_music)
         if self._item_sound:

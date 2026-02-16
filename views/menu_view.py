@@ -14,12 +14,12 @@ class MenuView(ctk.CTkFrame):
     Mantiene:
       - Fondo "cover" en Canvas.
       - Título y subtítulo centrados.
-      - 3 botones (Play/How to Play/Exit) como imágenes en Canvas.
+      - Botones como imágenes en Canvas.
       - Íconos music/sfx abajo-izquierda, tintados, escalados.
-      - Barra de logos: MISMA intención que tu versión original:
-          * Pastilla con ancho extra (+70) a propósito.
-          * Posicionamiento con bar_w - 90 (a propósito).
-          * Ubicada arriba-derecha.
+      - Barra de logos arriba-derecha.
+
+    Mejora aplicada:
+      - Header (título/subtítulo) subido para dar espacio a 5 botones (configurable).
     """
 
     BASE_W = 1080
@@ -34,6 +34,9 @@ class MenuView(ctk.CTkFrame):
         # Escala
         self.ui_scale = 1.0
         self._last_size = (0, 0)
+
+        # Header shift extra (en px base 1080x720). Sube título/subtítulo para acomodar 5 botones.
+        self._header_shift_base = 45  # ajusta 35-60 según gusto
 
         # Anti-spam hover SFX
         self._hover_cooldown = 0.08
@@ -57,7 +60,7 @@ class MenuView(ctk.CTkFrame):
         self._icon_cache = {}
         self._logo_cache = {}
 
-        # Título / subtítulo (items)
+        # Título / subtítulo
         self.title_item = self.canvas.create_text(
             0, 0,
             text="Legends Trivia Challenge",
@@ -73,7 +76,6 @@ class MenuView(ctk.CTkFrame):
             anchor="center",
         )
 
-
         # Botones tipo imagen
         self._btns = []
         self._create_canvas_image_button(
@@ -88,14 +90,12 @@ class MenuView(ctk.CTkFrame):
             width=320, height=64, r=16,
             color="#2b6ea6", hover="#327fbf",
         )
-
         self._create_canvas_image_button(
             text="Legends Knowledge", dy=270,
             command=self.controller.on_legends_knowledge,
             width=320, height=64, r=16,
             color="#2b6ea6", hover="#327fbf",
         )
-
         self._create_canvas_image_button(
             text="Credits", dy=345,
             command=self.controller.on_credits,
@@ -195,8 +195,16 @@ class MenuView(ctk.CTkFrame):
         self.canvas.itemconfig(self._item_sound, image=self._img_sound_off if muted else self._img_sound_on)
 
     # ===================== Botones tipo imagen (con SFX) =====================
-    def _make_round_img(self, w: int, h: int, r: int, fill: str,
-                        outline: str | None = None, outline_width: int = 0, aa_scale: int = 4):
+    def _make_round_img(
+        self,
+        w: int,
+        h: int,
+        r: int,
+        fill: str,
+        outline: str | None = None,
+        outline_width: int = 0,
+        aa_scale: int = 4
+    ):
         key = ("round", w, h, r, fill, outline, outline_width, aa_scale)
         if key in self._btn_cache:
             return self._btn_cache[key]
@@ -205,11 +213,14 @@ class MenuView(ctk.CTkFrame):
         img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
         draw.rounded_rectangle([0, 0, W - 1, H - 1], R, fill=fill)
+
         if outline and outline_width > 0:
             ow = outline_width * aa_scale
             draw.rounded_rectangle(
                 [ow // 2, ow // 2, W - 1 - ow // 2, H - 1 - ow // 2],
-                R - ow // 2, outline=outline, width=ow
+                max(0, R - ow // 2),
+                outline=outline,
+                width=ow
             )
 
         img = img.resize((w, h), Image.Resampling.LANCZOS)
@@ -218,15 +229,26 @@ class MenuView(ctk.CTkFrame):
         return tkimg
 
     def _create_canvas_image_button(
-        self, text: str, dy: int, command,
-        width: int = 320, height: int = 64, r: int = 16,
-        color: str = "#2b6ea6", hover: str = "#327fbf",
-        text_color: str = "white", outline: str | None = None, outline_width: int = 0
+        self,
+        text: str,
+        dy: int,
+        command,
+        width: int = 320,
+        height: int = 64,
+        r: int = 16,
+        color: str = "#2b6ea6",
+        hover: str = "#327fbf",
+        text_color: str = "white",
+        outline: str | None = None,
+        outline_width: int = 0
     ):
-        # Crear items; imágenes se asignan en _refresh_buttons() según escala
         img_item = self.canvas.create_image(0, 0, anchor="center")
         txt_item = self.canvas.create_text(
-            0, 0, text=text, fill=text_color, font=("Mikado Ultra", 20, "bold"), anchor="center"
+            0, 0,
+            text=text,
+            fill=text_color,
+            font=("Mikado Ultra", 20, "bold"),
+            anchor="center"
         )
 
         btn = {
@@ -306,15 +328,20 @@ class MenuView(ctk.CTkFrame):
             return
         try:
             if hasattr(sm, "play_ui"):
-                sm.play_ui(kind); return
+                sm.play_ui(kind)
+                return
             if hasattr(sm, "play"):
-                sm.play(kind); return
+                sm.play(kind)
+                return
             if kind == "hover" and hasattr(sm, "play_hover"):
-                sm.play_hover(); return
+                sm.play_hover()
+                return
             if kind == "click" and hasattr(sm, "play_click"):
-                sm.play_click(); return
+                sm.play_click()
+                return
             if kind == "toggle" and hasattr(sm, "play_toggle"):
-                sm.play_toggle(); return
+                sm.play_toggle()
+                return
         except Exception as e:
             print(f"[MenuView] SFX error ({kind}):", e)
 
@@ -327,49 +354,53 @@ class MenuView(ctk.CTkFrame):
 
         try:
             icons_dir = Path(assets_path("icons"))
-            music_on  = Image.open(icons_dir / "music_on.png").convert("RGBA")
+            music_on = Image.open(icons_dir / "music_on.png").convert("RGBA")
             music_off = Image.open(icons_dir / "music_off.png").convert("RGBA")
-            sound_on  = Image.open(icons_dir / "sound_on.png").convert("RGBA")
+            sound_on = Image.open(icons_dir / "sound_on.png").convert("RGBA")
             sound_off = Image.open(icons_dir / "sound_off.png").convert("RGBA")
 
             def scale_keep_ratio(img, h):
                 w = int(img.width * (h / img.height))
                 return img.resize((w, h), Image.Resampling.LANCZOS)
 
-            music_on  = scale_keep_ratio(music_on,  target_h)
+            music_on = scale_keep_ratio(music_on, target_h)
             music_off = scale_keep_ratio(music_off, target_h)
-            sound_on  = scale_keep_ratio(sound_on,  target_h)
+            sound_on = scale_keep_ratio(sound_on, target_h)
             sound_off = scale_keep_ratio(sound_off, target_h)
 
             title_color = self._get_title_color()
-            music_on  = self._tint_rgba(music_on,  title_color)
+            music_on = self._tint_rgba(music_on, title_color)
             music_off = self._tint_rgba(music_off, title_color)
-            sound_on  = self._tint_rgba(sound_on,  title_color)
+            sound_on = self._tint_rgba(sound_on, title_color)
             sound_off = self._tint_rgba(sound_off, title_color)
 
-            self._img_music_on  = ImageTk.PhotoImage(music_on)
+            self._img_music_on = ImageTk.PhotoImage(music_on)
             self._img_music_off = ImageTk.PhotoImage(music_off)
-            self._img_sound_on  = ImageTk.PhotoImage(sound_on)
+            self._img_sound_on = ImageTk.PhotoImage(sound_on)
             self._img_sound_off = ImageTk.PhotoImage(sound_off)
 
-            initial_music = (self._img_music_off if (self.sound_manager and self.sound_manager.is_muted())
-                             else self._img_music_on)
-            initial_sound = (self._img_sound_off if (self.sfx_manager and self.sfx_manager.is_muted())
-                             else self._img_sound_on)
+            initial_music = (
+                self._img_music_off if (self.sound_manager and self.sound_manager.is_muted())
+                else self._img_music_on
+            )
+            initial_sound = (
+                self._img_sound_off if (self.sfx_manager and self.sfx_manager.is_muted())
+                else self._img_sound_on
+            )
 
             if self._item_music is None:
                 self._item_music = self.canvas.create_image(0, 0, anchor="sw", image=initial_music)
                 self.canvas.tag_bind(self._item_music, "<Button-1>", lambda e: self._toggle_music())
-                self.canvas.tag_bind(self._item_music, "<Enter>",    lambda e: self.canvas.config(cursor="hand2"))
-                self.canvas.tag_bind(self._item_music, "<Leave>",    lambda e: self.canvas.config(cursor=""))
+                self.canvas.tag_bind(self._item_music, "<Enter>", lambda e: self.canvas.config(cursor="hand2"))
+                self.canvas.tag_bind(self._item_music, "<Leave>", lambda e: self.canvas.config(cursor=""))
             else:
                 self.canvas.itemconfig(self._item_music, image=initial_music)
 
             if self._item_sound is None:
                 self._item_sound = self.canvas.create_image(0, 0, anchor="sw", image=initial_sound)
                 self.canvas.tag_bind(self._item_sound, "<Button-1>", lambda e: self._toggle_sfx())
-                self.canvas.tag_bind(self._item_sound, "<Enter>",    lambda e: self.canvas.config(cursor="hand2"))
-                self.canvas.tag_bind(self._item_sound, "<Leave>",    lambda e: self.canvas.config(cursor=""))
+                self.canvas.tag_bind(self._item_sound, "<Enter>", lambda e: self.canvas.config(cursor="hand2"))
+                self.canvas.tag_bind(self._item_sound, "<Leave>", lambda e: self.canvas.config(cursor=""))
             else:
                 self.canvas.itemconfig(self._item_sound, image=initial_sound)
 
@@ -401,17 +432,8 @@ class MenuView(ctk.CTkFrame):
         if self._item_sound:
             self.canvas.tag_raise(self._item_sound)
 
-    # ===================== Barra de logos escalable (misma intención original) =====================
+    # ===================== Barra de logos escalable =====================
     def _ensure_logobar_scaled(self):
-        """
-        Reconstruye logos + pastilla al cambiar escala.
-
-        Mantiene:
-          - alturas base 70/40/20 (escaladas)
-          - padding y gap (escalados)
-          - ancho extra intencional: +70 (escalado)
-          - alto con extra intencional: +20 (escalado)
-        """
         h1 = self.S(70)
         h2 = self.S(40)
         h3 = self.S(20)
@@ -448,7 +470,7 @@ class MenuView(ctk.CTkFrame):
             widths = [logo1.width, logo2.width, logo3.width]
             logos_total_w = sum(widths) + gap * 2
 
-            # === EXACTO: “tamaño extra” intencional ===
+            # Tamaño extra intencional
             bar_w = left_pad + logos_total_w + right_pad + self.S(70)
             bar_h = top_pad + h3 + bottom_pad + self.S(20)
             radius = bar_h // 2
@@ -467,8 +489,8 @@ class MenuView(ctk.CTkFrame):
                 self._logo_bar_logo3_item = self.canvas.create_image(0, 0, anchor="center", image=self._img_logo3_bar)
             else:
                 self.canvas.itemconfig(self._logo_bar_logo1_item, image=self._img_logo1_bar)
-                self.canvas.itemconfig(self._logo_bar_logo2_item, image=self._img_logo2_bar) # type: ignore
-                self.canvas.itemconfig(self._logo_bar_logo3_item, image=self._img_logo3_bar) # type: ignore
+                self.canvas.itemconfig(self._logo_bar_logo2_item, image=self._img_logo2_bar)  # type: ignore
+                self.canvas.itemconfig(self._logo_bar_logo3_item, image=self._img_logo3_bar)  # type: ignore
 
             self._logo_bar_cfg = {
                 "bar_w": bar_w,
@@ -484,18 +506,13 @@ class MenuView(ctk.CTkFrame):
             self._logo_bar_cfg = None
 
     def _place_top_left_logobar(self, w: int, h: int):
-        """
-        Posiciona la barra de logos igual que tu versión original:
-          - arriba-derecha
-          - usando bar_w - 90 (intencional)
-        """
         if not self._logo_bar_cfg or self._logo_bar_bg_item is None:
             return
 
         cfg = self._logo_bar_cfg
         pad_window = self.S(18)
 
-        # === EXACTAMENTE como lo tenías ===
+        # Igual que tu versión original
         bar_w = cfg["bar_w"] - self.S(90)
         bar_h = cfg["bar_h"]
 
@@ -510,24 +527,21 @@ class MenuView(ctk.CTkFrame):
         widths = cfg["widths"]
         gap = cfg["gap"]
 
-        # Logo 1
         x1_center = x + widths[0] // 2
-        self.canvas.coords(self._logo_bar_logo1_item, x1_center, y_center) # type: ignore
+        self.canvas.coords(self._logo_bar_logo1_item, x1_center, y_center)  # type: ignore
 
-        # Logo 2
         x = x + widths[0] + gap
         x2_center = x + widths[1] // 2
-        self.canvas.coords(self._logo_bar_logo2_item, x2_center, y_center) # type: ignore
+        self.canvas.coords(self._logo_bar_logo2_item, x2_center, y_center)  # type: ignore
 
-        # Logo 3
         x = x + widths[1] + gap
         x3_center = x + widths[2] // 2
-        self.canvas.coords(self._logo_bar_logo3_item, x3_center, y_center) # type: ignore
+        self.canvas.coords(self._logo_bar_logo3_item, x3_center, y_center)  # type: ignore
 
         self.canvas.tag_raise(self._logo_bar_bg_item)
-        self.canvas.tag_raise(self._logo_bar_logo1_item) # type: ignore
-        self.canvas.tag_raise(self._logo_bar_logo2_item) # type: ignore
-        self.canvas.tag_raise(self._logo_bar_logo3_item) # type: ignore
+        self.canvas.tag_raise(self._logo_bar_logo1_item)  # type: ignore
+        self.canvas.tag_raise(self._logo_bar_logo2_item)  # type: ignore
+        self.canvas.tag_raise(self._logo_bar_logo3_item)  # type: ignore
 
     # ===================== Background cover =====================
     def _redraw_background(self):
@@ -536,7 +550,10 @@ class MenuView(ctk.CTkFrame):
             return
         src_w, src_h = self._bg_src.size
         scale = max(w / src_w, h / src_h)
-        bg = self._bg_src.resize((max(1, int(src_w * scale)), max(1, int(src_h * scale))), Image.Resampling.LANCZOS)
+        bg = self._bg_src.resize(
+            (max(1, int(src_w * scale)), max(1, int(src_h * scale))),
+            Image.Resampling.LANCZOS
+        )
         left = (bg.width - w) // 2
         top = (bg.height - h) // 2
         bg = bg.crop((left, top, left + w, top + h))
@@ -577,7 +594,6 @@ class MenuView(ctk.CTkFrame):
             self._ensure_logobar_scaled()
             self._refresh_buttons()
 
-            # opcional: limitar cache si crece demasiado
             if len(self._btn_cache) > 600:
                 self._btn_cache.clear()
 
@@ -588,11 +604,16 @@ class MenuView(ctk.CTkFrame):
         if w < 2 or h < 2:
             return
 
-        # Texto escalado y centrado
+        # Texto escalado
         self.canvas.itemconfigure(self.title_item, font=self.F(50, bold=True))
         self.canvas.itemconfigure(self.subtitle_item, font=self.F(22, bold=False))
 
-        cx, cy = w // 2, h // 2 - self.S(140)
+        # ======= MEJORA: subir el header =======
+        cx = w // 2
+
+        # base: h//2 - S(140), y sumamos shift (en px base) para subir más
+        cy = (h // 2) - self.S(140 + self._header_shift_base)
+
         self.canvas.coords(self.title_item, cx, cy)
         self.canvas.coords(self.subtitle_item, cx, cy + self.S(60))
 
@@ -605,5 +626,5 @@ class MenuView(ctk.CTkFrame):
         # Íconos (abajo-izquierda)
         self._place_bottom_left_icons(w, h)
 
-        # Logo bar (arriba-derecha, igual que antes)
+        # Logo bar (arriba-derecha)
         self._place_top_left_logobar(w, h)

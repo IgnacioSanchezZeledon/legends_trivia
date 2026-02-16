@@ -1,45 +1,72 @@
-# =====================
+# =========================
 # PYTHON
-# =====================
+# =========================
 __pycache__/
 *.py[cod]
 *$py.class
-views/__pycache__/
-controllers/__pycache__/
-models/__pycache__/
 
-# =====================
-# VIRTUAL ENV
-# =====================
+# Archivos compilados específicos
+*.so
+
+# =========================
+# ENTORNOS VIRTUALES
+# =========================
 .venv/
 venv/
 env/
+ENV/
 
-# =====================
-# PYINSTALLER
-# =====================
+# =========================
+# DISTRIBUCIÓN / BUILD
+# =========================
 build/
 dist/
-*.spec.bak
+develop-eggs/
+eggs/
+.eggs/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
 
-# =====================
-# LOGS / RUNTIME
-# =====================
+# =========================
+# PYINSTALLER
+# =========================
+*.spec
+*.manifest
+
+# =========================
+# TEST / COVERAGE
+# =========================
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+pytest_cache/
+
+# =========================
+# LOGS
+# =========================
 *.log
 
-# =====================
-# EDITORES
-# =====================
+# =========================
+# IDE / EDITORES
+# =========================
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# =====================
+# =========================
 # SISTEMA OPERATIVO
-# =====================
+# =========================
 .DS_Store
 Thumbs.db
 
-# =====================
-# ARCHIVOS GENERADOS
-# =====================
+# =========================
+# ARCHIVOS LOCALES
+# =========================
 progress.json
+.env
+.env.*

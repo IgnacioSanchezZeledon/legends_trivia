@@ -93,14 +93,19 @@ class CreditsView(ttk.Frame):
                 "• Level: Ninth Grade",
                 "• Academic Plan",
                 "• Unit 6",
-            ]
-
-            default_right = [
+                "",
                 "Learning Focus",
                 "• Scenario: Open a Book, Open Your Mind",
                 "• Theme: Costa Rican legends",
+            ]
+
+            default_right = [
+                "Legend Images Credits",
+                "• Wikimedia Commons (CC)",
+                "• Pixabay",
+                "• Unsplash",
                 "",
-                "Developed by",
+                "Developed by:",
                 "• Ignacio Sánchez Zeledón",
             ]
 
